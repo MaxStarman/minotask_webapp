@@ -1,28 +1,29 @@
-# Minotask Web App
+# minotask_webapp
 
-Minotask is a Slovenian SaaS that turns PDF invoices into compliant Intrastat reports. It consists of a React/Tailwind frontend and a Flask backend that runs the AI-powered extraction, enrichment, and Excel generation pipeline. Authentication and user storage run through Supabase; job progress is streamed to the browser via Server-Sent Events (SSE).
+Minotask is a small web app that turns uploaded invoice PDFs into an Intrastat-style Excel report.
+This repo is a simple "frontend + backend" setup: the browser UI calls an API, the API does the work, and the UI shows progress + lets you download the result.
 
-## Monorepo Layout
+## What's inside
 
-- `frontend/` - React 18 + Vite app (shadcn/ui, Tailwind, React Query). Handles auth, PDF upload, job tracking, downloads, bug reporting, pricing/profile pages, and Stripe UI scaffolding.
-- `backend/` - Flask API. Validates Supabase JWTs, accepts PDF uploads, runs the Intrastat engine (Gemini AI + tariff/weight enrichment), emits SSE progress, serves Excel output, and receives bug reports.
+- `frontend/`: React (Vite + Tailwind) UI - the part you open in the browser.
+- `backend/`: Flask API - the part that accepts uploads, runs processing, and returns results.
 
-## How Frontend & Backend Talk
+## High-level architecture (how everything is connected)
 
-- Auth: frontend uses Supabase client; access token is sent as `Authorization: Bearer <jwt>` to backend.
-- Jobs: `POST /api/jobs` uploads PDFs + report_type; backend queues processing and returns `jobId`. Frontend then:
-  - listens to `GET /api/jobs/{id}/events?token=jwt` via SSE for live stage updates;
-  - falls back to 4s polling `GET /api/jobs/{id}` if SSE disconnects;
-  - downloads result via `GET /api/jobs/{id}/download` when status is `completed`.
-- Test/health: `GET /api/test` requires auth; `GET /health` is public.
-- Bug reports: `POST /api/bug-report` (auth) with optional screenshot.
+1. User opens the frontend and signs in (Supabase is used for auth/session).
+2. Frontend calls the backend API with the user token (so the backend knows who is calling).
+3. Backend starts a "job" when PDFs are uploaded (this is the long-running work).
+4. Frontend listens for progress (SSE is used so the UI can update while the job runs).
+5. Backend produces an Excel file, and the frontend offers a download when the job is done.
 
+That's basically it: UI -> API -> background processing -> progress updates -> download.
 
-## High-Level Data Flow
+## Running locally (very roughly)
 
-1. User signs in via Supabase (email/password). Supabase session persists in browser.
-2. User uploads one or more PDF invoices and selects report type (1=imports PREJEMI, 2=exports ODPREME).
-3. Backend validates JWT, rate limits, validates PDFs, computes an input hash for idempotency, and enqueues work.
-4. Intrastat engine (Gemini + tariff DB + OpenPyXL) extracts, enriches, and builds Excel in memory.
-5. Progress events stream over SSE; on completion frontend triggers download.
-6. Optional bug report flow sends text + screenshot to backend, which relays via Resend.
+- Backend: run the Flask app in `backend/` (you'll need environment variables for auth + any AI/services you use).
+- Frontend: run the Vite dev server in `frontend/` and point it at the backend URL.
+
+## Notes
+
+- The backend exposes a small REST API plus an SSE endpoint for progress.
+- The frontend uses a small API client and a progress hook to tie the UI to backend jobs.
