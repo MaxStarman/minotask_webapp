@@ -4,3 +4,6 @@
 [submodule "backend"]
 	path = backend
 	url = https://github.com/MaxStarman/minotask-backend.git
+[submodule "prompt-lab"]
+	path = prompt-lab
+	url = https://github.com/MaxStarman/minotask-prompt-lab.git
