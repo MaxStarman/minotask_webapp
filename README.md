@@ -1,29 +1,43 @@
-# minotask_webapp
+# Minotask Web App
 
-Minotask is a small web app that turns uploaded invoice PDFs into an Intrastat-style Excel report.
-This repo is a simple "frontend + backend" setup: the browser UI calls an API, the API does the work, and the UI shows progress + lets you download the result.
+Minotask is a web application for turning invoice PDFs into Intrastat-ready reports with a guided, user-friendly workflow.
 
-## What's inside
+Simple explanation: users upload invoice documents, the app processes the data behind the scenes, and the finished report can be reviewed and downloaded from the browser.
 
-- `frontend/`: React (Vite + Tailwind) UI - the part you open in the browser.
-- `backend/`: Flask API - the part that accepts uploads, runs processing, and returns results.
+## Overview
 
-## High-level architecture (how everything is connected)
+This repository contains the main Minotask product and a separate Prompt Lab workspace used internally for prompt and pipeline iteration.
 
-1. User opens the frontend and signs in (Supabase is used for auth/session).
-2. Frontend calls the backend API with the user token (so the backend knows who is calling).
-3. Backend starts a "job" when PDFs are uploaded (this is the long-running work).
-4. Frontend listens for progress (SSE is used so the UI can update while the job runs).
-5. Backend produces an Excel file, and the frontend offers a download when the job is done.
+- `frontend/` contains the customer-facing web app.
+- `backend/` contains the API and report-processing services.
+- `prompt-lab/` contains a local development workspace for Prompt Lab.
 
-That's basically it: UI -> API -> background processing -> progress updates -> download.
+## Product Areas
 
-## Running locally (very roughly)
+- PDF upload and report generation
+- Account access and user flows
+- Pricing and profile management
+- Background job processing with progress updates
+- Internal Prompt Lab for experimenting with pipeline stages
 
-- Backend: run the Flask app in `backend/` (you'll need environment variables for auth + any AI/services you use).
-- Frontend: run the Vite dev server in `frontend/` and point it at the backend URL.
+## Tech Stack
+
+- Frontend: React, TypeScript, Vite, Tailwind CSS
+- Backend: Python, Flask
+- Data and auth: Supabase
+- Document/report processing: PDF parsing and Excel generation
+- AI-assisted pipeline: model-driven extraction and enrichment
+
+## Repository Layout
+
+```text
+minotask_webapp/
+  backend/
+  frontend/
+  prompt-lab/
+```
 
 ## Notes
 
-- The backend exposes a small REST API plus an SSE endpoint for progress.
-- The frontend uses a small API client and a progress hook to tie the UI to backend jobs.
+- The top-level README stays intentionally high-level because this repository is public.
+- More detailed setup and workflow notes live inside the individual app folders.
